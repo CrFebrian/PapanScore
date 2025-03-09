@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,7 +36,6 @@ import com.example.nim234311035.papankounter.ui.theme.PapanKounterTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: AngkaViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -56,39 +56,54 @@ class MainActivity : ComponentActivity() {
 fun PapanKounterApp(viewModel: AngkaViewModel, modifier: Modifier = Modifier) {
     val scoreTeamA by viewModel.scoreTeamA.collectAsState()
     val scoreTeamB by viewModel.scoreTeamB.collectAsState()
+    val gameTeamA by viewModel.gameTeamA.collectAsState()
+    val gameTeamB by viewModel.gameTeamB.collectAsState()
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(Color.White)
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Papan Skor Dipindah ke Atas
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.Blue)
-                .padding(vertical = 16.dp),
+                .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
-            //Headernya Dibagian ini
             Text(
                 text = "Papan Score",
-                fontSize = 30.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Bagian skor berada di tengah layar
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(
+                text = "Game: $gameTeamA - $gameTeamB",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            Text(
+                text = "Set: $scoreTeamA - $scoreTeamB",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Tampilan Skor Tim
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -96,14 +111,39 @@ fun PapanKounterApp(viewModel: AngkaViewModel, modifier: Modifier = Modifier) {
                 TeamScore("Team A", scoreTeamA, viewModel::increaseScoreA, viewModel::decreaseScoreA)
                 TeamScore("Team B", scoreTeamB, viewModel::increaseScoreB, viewModel::decreaseScoreB)
             }
+        }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = { viewModel.resetScores() },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+        // Bagian Tombol Tetap di Bawah
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
             ) {
-                Text("RESET", color = Color.White)
+                Button(
+                    onClick = { viewModel.resetScores() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Reset Scores", color = Color.White)
+                }
+                Button(
+                    onClick = { viewModel.resetGame() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text("Reset Game", color = Color.White)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Tombol End Game di Bawah
+            Button(
+                onClick = { viewModel.endCurrentGame() },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text("End Game", color = Color.White)
             }
         }
     }
@@ -142,7 +182,8 @@ fun TeamScore(teamName: String, score: Int, onIncrease: () -> Unit, onDecrease: 
 @Preview(showBackground = true)
 @Composable
 fun PreviewApp() {
+    val dummyViewModel = remember { AngkaViewModel() } // ✅ Gunakan remember
     PapanKounterTheme {
-        PapanKounterApp(AngkaViewModel())
+        PapanKounterApp(viewModel = dummyViewModel)
     }
 }
